@@ -257,3 +257,7 @@ Maybe the `ipfs repo filestore` abstractions can leverage `ipfs-packs` to unders
 ## Test Cases
 
 WIP
+
+## References
+
+- [BagIt] The BagIt File Packaging Format, October 2016, <https://tools.ietf.org/html/draft-kunze-bagit-14>
