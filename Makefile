@@ -14,5 +14,7 @@ deps: vendor/src/github.com/ipfs/go-ipfs
 	go get -d .
 
 vendor/src/github.com/ipfs/go-ipfs:
-	mkdir -p vendor/src/github.com/ipfs/
-	git clone https://github.com/ipfs/go-ipfs vendor/src/github.com/ipfs/go-ipfs
+	mkdir -p vendor
+	ln -s $(GOPATH) vendor/src
+	mkdir -p vendor/github.com/ipfs/
+	git clone https://github.com/ipfs/go-ipfs vendor/github.com/ipfs/go-ipfs
