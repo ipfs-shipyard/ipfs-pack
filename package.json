@@ -1,0 +1,30 @@
+{
+  "author": "whyrusleeping",
+  "bugs": {
+    "url": "https://github.com/ipfs/ipfs-pack"
+  },
+  "gx": {
+    "dvcsimport": "github.com/ipfs/ipfs-pack"
+  },
+  "gxDependencies": [
+    {
+      "author": "jbenet",
+      "hash": "QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364",
+      "name": "go-datastore",
+      "version": "1.2.0"
+    },
+    {
+      "author": "whyrusleeping",
+      "hash": "QmcTcsTvfaeEBRFo1TkFgT8sRmgi1n1LTZpecfVP8fzpGD",
+      "name": "go-cid",
+      "version": "0.7.7"
+    }
+  ],
+  "gxVersion": "0.10.0",
+  "language": "go",
+  "license": "",
+  "name": "ipfs-pack",
+  "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
+  "version": "0.0.0"
+}
+
