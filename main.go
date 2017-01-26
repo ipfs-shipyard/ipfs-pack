@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	balanced "github.com/ipfs/go-ipfs/importer/balanced"
 	chunk "github.com/ipfs/go-ipfs/importer/chunk"
 	h "github.com/ipfs/go-ipfs/importer/helpers"
+	dag "github.com/ipfs/go-ipfs/merkledag"
 	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
 
 	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
@@ -111,6 +113,12 @@ var makePackCommand = cli.Command{
 var servePackCommand = cli.Command{
 	Name:  "serve",
 	Usage: "start an ipfs node to serve this pack's contents",
+	Flags: []cli.Flag{
+		cli.BoolTFlag{
+			Name:  "verify",
+			Usage: "verify integrity of pack before serving",
+		},
+	},
 	Action: func(c *cli.Context) error {
 		packpath := filepath.Join(cwd, PackRepo)
 		if !fsrepo.IsInitialized(packpath) {
@@ -118,6 +126,37 @@ var servePackCommand = cli.Command{
 		}
 
 		r, err := getRepo()
+		if err != nil {
+			return err
+		}
+
+		verify := c.BoolT("verify")
+		if verify {
+			_, ds := buildDagserv(r.Datastore(), r.FileManager())
+			fi, err := os.Open(ManifestFilename)
+			if err != nil {
+				switch {
+				case os.IsNotExist(err):
+					return fmt.Errorf("error: no %s found", ManifestFilename)
+				default:
+					return fmt.Errorf("error opening %s: %s", ManifestFilename, err)
+				}
+			}
+			defer fi.Close()
+
+			problem, err := verifyPack(ds, fi)
+			if err != nil {
+				return err
+			}
+
+			if problem {
+				return fmt.Errorf("pack verify failed, refusing to serve")
+			} else {
+				fmt.Println("verified pack, starting server...")
+			}
+		}
+
+		root, err := getManifestRoot()
 		if err != nil {
 			return err
 		}
@@ -136,6 +175,8 @@ var servePackCommand = cli.Command{
 		for _, a := range nd.PeerHost.Addrs() {
 			fmt.Printf("    %s\n", a)
 		}
+
+		fmt.Printf("Pack root is %s\n", root)
 
 		<-nd.Context().Done()
 		return nil
@@ -173,59 +214,11 @@ var verifyPackCommand = cli.Command{
 
 		_, ds := buildDagserv(dstore, fm)
 
-		var issue bool
-		scan := bufio.NewScanner(fi)
-		for scan.Scan() {
-			parts := strings.SplitN(scan.Text(), "\t", 3)
-			hash := parts[0]
-			fmtstr := parts[1]
-			path := parts[2]
-
-			// don't use this yet
-			_ = fmtstr
-
-			fi, err := os.Open(path)
-			switch {
-			case os.IsNotExist(err):
-				fmt.Printf("error: in manifest, missing from pack: %s\n", path)
-				issue = true
-				continue
-			default:
-				fmt.Printf("error: checking file %s: %s\n", path, err)
-				issue = true
-				continue
-			case err == nil:
-				// continue
-			}
-
-			st, err := fi.Stat()
-			if err != nil {
-				return err
-			}
-			if st.IsDir() {
-				continue
-			}
-
-			spl := chunk.NewSizeSplitter(fi, chunk.DefaultBlockSize)
-			params := &h.DagBuilderParams{
-				Dagserv:   ds,
-				NoCopy:    true,
-				RawLeaves: true,
-				Maxlinks:  h.DefaultLinksPerBlock,
-			}
-			dbh := params.New(spl)
-
-			nd, err := balanced.BalancedLayout(dbh)
-			if err != nil {
-				return err
-			}
-
-			if nd.Cid().String() != hash {
-				fmt.Printf("Checksum mismatch on %s. (%s)\n", path, nd.Cid().String())
-				issue = true
-				continue
-			}
+		issue, err := verifyPack(ds, fi)
+		if err != nil {
+			return err
 		}
+
 		if !issue {
 			fmt.Println("Pack verified successfully!")
 		} else {
@@ -233,4 +226,61 @@ var verifyPackCommand = cli.Command{
 		}
 		return nil
 	},
+}
+
+func verifyPack(ds dag.DAGService, manif io.Reader) (bool, error) {
+	var issue bool
+	scan := bufio.NewScanner(manif)
+	for scan.Scan() {
+		parts := strings.SplitN(scan.Text(), "\t", 3)
+		hash := parts[0]
+		fmtstr := parts[1]
+		path := parts[2]
+
+		// don't use this yet
+		_ = fmtstr
+
+		fi, err := os.Open(path)
+		switch {
+		case os.IsNotExist(err):
+			fmt.Printf("error: in manifest, missing from pack: %s\n", path)
+			issue = true
+			continue
+		default:
+			fmt.Printf("error: checking file %s: %s\n", path, err)
+			issue = true
+			continue
+		case err == nil:
+			// continue
+		}
+
+		st, err := fi.Stat()
+		if err != nil {
+			return issue, err
+		}
+		if st.IsDir() {
+			continue
+		}
+
+		spl := chunk.NewSizeSplitter(fi, chunk.DefaultBlockSize)
+		params := &h.DagBuilderParams{
+			Dagserv:   ds,
+			NoCopy:    true,
+			RawLeaves: true,
+			Maxlinks:  h.DefaultLinksPerBlock,
+		}
+		dbh := params.New(spl)
+
+		nd, err := balanced.BalancedLayout(dbh)
+		if err != nil {
+			return issue, err
+		}
+
+		if nd.Cid().String() != hash {
+			fmt.Printf("Checksum mismatch on %s. (%s)\n", path, nd.Cid().String())
+			issue = true
+			continue
+		}
+	}
+	return issue, nil
 }
