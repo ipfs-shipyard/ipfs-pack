@@ -233,14 +233,19 @@ var verifyPackCommand = cli.Command{
 func verifyPack(ds dag.DAGService, manif io.Reader) (bool, error) {
 	var issue bool
 	scan := bufio.NewScanner(manif)
+
+	imp := DefaultImporterSettings.String()
 	for scan.Scan() {
 		parts := strings.SplitN(scan.Text(), "\t", 3)
 		hash := parts[0]
 		fmtstr := parts[1]
 		path := parts[2]
 
-		// don't use this yet
-		_ = fmtstr
+		if fmtstr != imp {
+			fmt.Printf("error: unsupported importer settings in manifest file: %s\n", fmtstr)
+			issue = true
+			continue
+		}
 
 		fi, err := os.Open(path)
 		switch {
