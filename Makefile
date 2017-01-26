@@ -3,12 +3,15 @@ export GOPATH=$(shell pwd)/vendor
 all:
 	true
 
+install: deps
+	go install
+
 build: deps
-	go get -d .
 	go build
 
 deps: vendor/src/github.com/ipfs/go-ipfs
 	cd vendor/src/github.com/ipfs/go-ipfs && git checkout feat/filestore0 && make deps
+	go get -d .
 
 vendor/src/github.com/ipfs/go-ipfs:
 	mkdir -p vendor/src/github.com/ipfs/
