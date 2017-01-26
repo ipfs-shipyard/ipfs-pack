@@ -77,13 +77,15 @@ var makePackCommand = cli.Command{
 			return err
 		}
 
+		imp := DefaultImporterSettings.String()
+
 		go func() {
 			defer close(done)
 			defer manifest.Close()
 			for v := range output {
 				ao := v.(*cu.AddedObject)
 				towrite := "." + ao.Name[len(dirname):]
-				fmt.Fprintf(manifest, "%s\tFMTSTR\t%s\n", ao.Hash, towrite)
+				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, towrite)
 			}
 		}()
 

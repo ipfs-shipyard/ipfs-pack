@@ -9,6 +9,10 @@
 - It helps verify the authenticity of data through a file carrying cryptographic signatures (PackAuth).
 
 
+## Installing
+
+With go installed, simply run `make build`.
+
 ## Spec
 
 Read the `ipfs-pack` work-in-progress "spec" here: [Spec (WIP)](./spec.md).
