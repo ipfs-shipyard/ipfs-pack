@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"strings"
 
 	cli "github.com/urfave/cli"
@@ -42,6 +43,29 @@ const (
 )
 
 func main() {
+	if err := doMain(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func doMain() error {
+	proffi := os.Getenv("IPFS_PACK_PROFILE")
+	if proffi != "" {
+		fi, err := os.Create(proffi)
+		if err != nil {
+			return err
+		}
+
+		defer fi.Close()
+		err = pprof.StartCPUProfile(fi)
+		if err != nil {
+			return err
+		}
+
+		defer pprof.StopCPUProfile()
+	}
+
 	app := cli.NewApp()
 	app.Commands = []cli.Command{
 		makePackCommand,
@@ -50,7 +74,7 @@ func main() {
 		servePackCommand,
 	}
 
-	app.RunAndExitOnError()
+	return app.Run(os.Args)
 }
 
 var makePackCommand = cli.Command{
