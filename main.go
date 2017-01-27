@@ -22,6 +22,7 @@ import (
 	h "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/importer/helpers"
 	dag "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/merkledag"
 	fsrepo "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/repo/fsrepo"
+	ft "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/unixfs"
 
 	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
@@ -307,7 +308,7 @@ func verifyPack(ds dag.DAGService, manif io.Reader) (bool, error) {
 }
 
 func verifyItem(path, hash string, params *h.DagBuilderParams) (bool, error) {
-	fi, err := os.Open(path)
+	st, err := os.Lstat(path)
 	switch {
 	case os.IsNotExist(err):
 		fmt.Printf("error: in manifest, missing from pack: %s\n", path)
@@ -318,15 +319,35 @@ func verifyItem(path, hash string, params *h.DagBuilderParams) (bool, error) {
 	case err == nil:
 		// continue
 	}
-	defer fi.Close()
 
-	st, err := fi.Stat()
-	if err != nil {
-		return false, err
-	}
 	if st.IsDir() {
 		return true, nil
 	}
+	if st.Mode()&os.ModeSymlink != 0 {
+		trgt, err := os.Readlink(path)
+		if err != nil {
+			return false, err
+		}
+
+		data, err := ft.SymlinkData(trgt)
+		if err != nil {
+			return false, err
+		}
+
+		nd := new(dag.ProtoNode)
+		nd.SetData(data)
+		if nd.Cid().String() != hash {
+			fmt.Printf("Checksum mismatch on symlink: %s", path)
+			return false, nil
+		}
+		return true, nil
+	}
+
+	fi, err := os.Open(path)
+	if err != nil {
+		return false, err
+	}
+	defer fi.Close()
 
 	spl := chunk.NewSizeSplitter(fi, chunk.DefaultBlockSize)
 	dbh := params.New(spl)
