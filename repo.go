@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	cli "github.com/urfave/cli"
+	cli "gx/ipfs/QmVahSzvB3Upf5dAW15dpktF6PXb4z9V5LohmbcUqktyF4/cli"
 
-	blockstore "github.com/ipfs/go-ipfs/blocks/blockstore"
-	pin "github.com/ipfs/go-ipfs/pin"
-	gc "github.com/ipfs/go-ipfs/pin/gc"
-	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
+	blockstore "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/blocks/blockstore"
+	pin "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/pin"
+	gc "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/pin/gc"
+	fsrepo "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/repo/fsrepo"
 
 	cid "gx/ipfs/QmcTcsTvfaeEBRFo1TkFgT8sRmgi1n1LTZpecfVP8fzpGD/go-cid"
 )

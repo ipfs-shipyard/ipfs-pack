@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"encoding/hex"
-	mh "github.com/multiformats/go-multihash"
+	mh "gx/ipfs/QmYDds3421prZgqKbLpEK7T9Aa2eVdQ7o3YarX1LVLdP2J/go-multihash"
 )
 
 const (

@@ -9,18 +9,21 @@ import (
 	"path/filepath"
 	"runtime/pprof"
 	"strings"
+	"time"
 
-	cli "github.com/urfave/cli"
+	cli "gx/ipfs/QmVahSzvB3Upf5dAW15dpktF6PXb4z9V5LohmbcUqktyF4/cli"
 
-	core "github.com/ipfs/go-ipfs/core"
-	cu "github.com/ipfs/go-ipfs/core/coreunix"
-	filestore "github.com/ipfs/go-ipfs/filestore"
-	balanced "github.com/ipfs/go-ipfs/importer/balanced"
-	chunk "github.com/ipfs/go-ipfs/importer/chunk"
-	h "github.com/ipfs/go-ipfs/importer/helpers"
-	dag "github.com/ipfs/go-ipfs/merkledag"
-	fsrepo "github.com/ipfs/go-ipfs/repo/fsrepo"
+	core "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/core"
+	cu "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/core/coreunix"
+	bitswap "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/exchange/bitswap"
+	filestore "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/filestore"
+	balanced "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/importer/balanced"
+	chunk "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/importer/chunk"
+	h "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/importer/helpers"
+	dag "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/merkledag"
+	fsrepo "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/repo/fsrepo"
 
+	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
 )
 
@@ -203,8 +206,22 @@ var servePackCommand = cli.Command{
 		}
 
 		fmt.Printf("Pack root is %s\n", root)
+		tick := time.NewTicker(time.Second * 2)
+		for {
+			select {
+			case <-nd.Context().Done():
+				return nil
+			case <-tick.C:
+				st, err := nd.Exchange.(*bitswap.Bitswap).Stat()
+				if err != nil {
+					fmt.Println("error getting block stat: ", err)
+					continue
+				}
+				fmt.Printf(strings.Repeat("    ", 12) + "\r")
+				fmt.Printf("Shared: %6d blocks, %s total data uploaded\r", st.BlocksSent, human.Bytes(st.DataSent))
+			}
+		}
 
-		<-nd.Context().Done()
 		return nil
 	},
 }
