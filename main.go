@@ -288,47 +288,57 @@ func verifyPack(ds dag.DAGService, manif io.Reader) (bool, error) {
 			continue
 		}
 
-		fi, err := os.Open(path)
-		switch {
-		case os.IsNotExist(err):
-			fmt.Printf("error: in manifest, missing from pack: %s\n", path)
-			issue = true
-			continue
-		default:
-			fmt.Printf("error: checking file %s: %s\n", path, err)
-			issue = true
-			continue
-		case err == nil:
-			// continue
-		}
-
-		st, err := fi.Stat()
-		if err != nil {
-			return issue, err
-		}
-		if st.IsDir() {
-			continue
-		}
-
-		spl := chunk.NewSizeSplitter(fi, chunk.DefaultBlockSize)
 		params := &h.DagBuilderParams{
 			Dagserv:   ds,
 			NoCopy:    true,
 			RawLeaves: true,
 			Maxlinks:  h.DefaultLinksPerBlock,
 		}
-		dbh := params.New(spl)
 
-		nd, err := balanced.BalancedLayout(dbh)
+		ok, err := verifyItem(path, hash, params)
 		if err != nil {
-			return issue, err
+			return false, err
 		}
-
-		if nd.Cid().String() != hash {
-			fmt.Printf("Checksum mismatch on %s. (%s)\n", path, nd.Cid().String())
+		if !ok {
 			issue = true
-			continue
 		}
 	}
 	return issue, nil
+}
+
+func verifyItem(path, hash string, params *h.DagBuilderParams) (bool, error) {
+	fi, err := os.Open(path)
+	switch {
+	case os.IsNotExist(err):
+		fmt.Printf("error: in manifest, missing from pack: %s\n", path)
+		return false, nil
+	default:
+		fmt.Printf("error: checking file %s: %s\n", path, err)
+		return false, nil
+	case err == nil:
+		// continue
+	}
+	defer fi.Close()
+
+	st, err := fi.Stat()
+	if err != nil {
+		return false, err
+	}
+	if st.IsDir() {
+		return true, nil
+	}
+
+	spl := chunk.NewSizeSplitter(fi, chunk.DefaultBlockSize)
+	dbh := params.New(spl)
+
+	nd, err := balanced.BalancedLayout(dbh)
+	if err != nil {
+		return false, err
+	}
+
+	if nd.Cid().String() != hash {
+		fmt.Printf("Checksum mismatch on %s. (%s)\n", path, nd.Cid().String())
+		return false, nil
+	}
+	return true, nil
 }
