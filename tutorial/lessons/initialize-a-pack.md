@@ -44,11 +44,25 @@ $ ipfs-pack verify --help
 
 ```
 $ ipfs-pack verify
+Pack verified successfully!
 ```
 
-## Step 3: Build a Local IPFS Object Store inside the Pack
+If any of the files in your pack have changed, the output will tell you which files have changed and conclude with the message `Pack verify found some corruption.` For example, if my pack contaiined a file called `styles/site.css` and I modified it after building the pack, I would get a message like:
 
-This will build an IPFS repository in the root of the pack
+```
+Checksum mismatch on ./styles/site.css. (zb2rhof9xknpBt36jvWRPVADLfsk2zhL7y5dLUSRRNfMuTGnF)
+Pack verify found some corruption.
+```
+
+## Step 3: Update the PackManifest
+
+If you change any of the files in your pack, you can update the PackManifest by running `ipfs-pack make` again. This will update the PackManifest to accurately represent the current contents of the pack tree.
+
+This is not like git, which keeps previous versions of your files when you commit new changes. On the contrary, the current version of ipfs-pack is specifically designed **not to duplicate** any of your content. This is so you can add any amount of data, possibly hundreds of Terabytes, without taking up extra storage.
+
+## Step 4: Build a Local IPFS Object Store inside the Pack
+
+This will build an IPFS repository in the root of your pack
 
 ```
 $ ipfs-pack repo --help
