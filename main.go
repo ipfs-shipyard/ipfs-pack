@@ -84,7 +84,14 @@ func doMain() error {
 var makePackCommand = cli.Command{
 	Name:  "make",
 	Usage: "makes the package, overwriting the PackManifest file.",
+	Flags: []cli.Flag{
+		cli.BoolFlag{
+			Name:  "verbose",
+			Usage: "enable verbose output",
+		},
+	},
 	Action: func(c *cli.Context) error {
+		verbose := c.Bool("verbose")
 		repo, err := getRepo()
 		if err != nil {
 			return err
@@ -110,10 +117,16 @@ var makePackCommand = cli.Command{
 		go func() {
 			defer close(done)
 			defer manifest.Close()
+			var count int
 			for v := range output {
+				count++
 				ao := v.(*cu.AddedObject)
 				towrite := "." + ao.Name[len(dirname):]
 				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, towrite)
+				if verbose {
+					fmt.Printf("                                       \r")
+					fmt.Printf("Processed %d files...\r", count)
+				}
 			}
 		}()
 
