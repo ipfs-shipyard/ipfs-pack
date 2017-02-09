@@ -192,7 +192,7 @@ USAGE
     ipfs-pack repo <subcommand> <arguments>
 
 SUBCOMMANDS
-    make   creates (or updates) the pack repo for a pack directory
+    regen   regenerate ipfs-pack repo for this pack
     ls     lists all cids in the pack repo
     gc     garbage collect the pack repo (pinset = PackManifest)
     rm     removes the pack's ipfs repo
