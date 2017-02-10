@@ -31,6 +31,7 @@ var repoCommand = cli.Command{
 		repoRmCommand,
 	},
 }
+
 var repoRegenCommand = cli.Command{
 	Name:  "regen",
 	Usage: "regenerate ipfs-pack repo for this pack",
@@ -213,9 +214,15 @@ func getManifestRoot() (*cid.Cid, error) {
 		}
 	}
 
-	_, err = fi.Seek(-512, os.SEEK_END)
+	st, err := fi.Stat()
 	if err != nil {
 		return nil, err
+	}
+	if st.Size() > 1024 {
+		_, err = fi.Seek(-512, os.SEEK_END)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	scan := bufio.NewScanner(fi)
