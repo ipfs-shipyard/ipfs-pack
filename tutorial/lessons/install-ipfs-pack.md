@@ -4,6 +4,7 @@ Lesson: Install ipfs-pack
 ## Prerequisites
 
 * Install [go](https://golang.org/dl/)
+* Make sure that $GOPATH is on $PATH `export PATH=$PATH:$GOPATH/bin`
 
 You do not need to install ipfs separately. ipfs-pack will handle that for you.
 
