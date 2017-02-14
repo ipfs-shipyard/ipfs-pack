@@ -1,3 +1,4 @@
+export IPFS_API=ipfs.io
 
 all: deps
 
