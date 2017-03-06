@@ -196,15 +196,17 @@ var servePackCommand = cli.Command{
 			}
 			defer fi.Close()
 
+			fmt.Println("Verifying pack contents before serving...")
+
 			problem, err := verifyPack(ds, fi)
 			if err != nil {
 				return err
 			}
 
 			if problem {
-				return fmt.Errorf("pack verify failed, refusing to serve")
+				return fmt.Errorf("Pack verify failed, refusing to serve.\n  To continue, Fix the files contents and re-run 'ipfs-pack serve'\n  If these changes were intentional, re-run 'ipfs-pack make' to regenerate the manifest")
 			} else {
-				fmt.Println("verified pack, starting server...")
+				fmt.Println("Verified pack, starting server...")
 			}
 		}
 
@@ -222,26 +224,27 @@ var servePackCommand = cli.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Println("Serving data in this pack...")
-		fmt.Printf("Peer ID: %s\n", nd.Identity.Pretty())
+		fmt.Println("Serving data in this pack to the network...")
+		fmt.Printf("Peer Multiaddrs:\n")
 		for _, a := range nd.PeerHost.Addrs() {
-			fmt.Printf("    %s\n", a)
+			fmt.Printf("    %s/ipfs/%s\n", a, nd.Identity.Pretty())
 		}
 
-		fmt.Printf("Pack root is %s\n", root)
+		fmt.Printf("\nPack root hash is /ipfs/%s\n\n", root)
 		tick := time.NewTicker(time.Second * 2)
 		for {
 			select {
 			case <-nd.Context().Done():
 				return nil
 			case <-tick.C:
+				npeers := len(nd.PeerHost.Network().Peers())
 				st, err := nd.Exchange.(*bitswap.Bitswap).Stat()
 				if err != nil {
 					fmt.Println("error getting block stat: ", err)
 					continue
 				}
 				fmt.Printf(strings.Repeat("    ", 12) + "\r")
-				fmt.Printf("Shared: %6d blocks, %s total data uploaded\r", st.BlocksSent, human.Bytes(st.DataSent))
+				fmt.Printf("Peers: %4d. Shared: %6d blocks, %s total data uploaded.   \r", npeers, st.BlocksSent, human.Bytes(st.DataSent))
 			}
 		}
 
