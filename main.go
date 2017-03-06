@@ -249,7 +249,7 @@ var servePackCommand = cli.Command{
 			fmt.Printf("    %s/ipfs/%s\n", a, nd.Identity.Pretty())
 		}
 
-		fmt.Printf("\nPack root hash is /ipfs/%s\n\n", root)
+		fmt.Printf("\nPack root hash is /ipfs/%s\n\n\n\n", root)
 		tick := time.NewTicker(time.Second * 2)
 		for {
 			select {
@@ -262,8 +262,9 @@ var servePackCommand = cli.Command{
 					fmt.Println("error getting block stat: ", err)
 					continue
 				}
+				fmt.Printf("\033[1A")
 				fmt.Printf(strings.Repeat("    ", 12) + "\r")
-				fmt.Printf("Peers: %4d. Shared: %6d blocks, %s total data uploaded.   \r", npeers, st.BlocksSent, human.Bytes(st.DataSent))
+				fmt.Printf("Libp2p Peers: %4d\nShared:     %6d blocks, %s total data uploaded.   \r", npeers, st.BlocksSent, human.Bytes(st.DataSent))
 			}
 		}
 
