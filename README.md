@@ -13,6 +13,19 @@
 
 With go installed, simply run `make build`.
 
+## Testing
+Tests require the [random-files](https://github.com/jbenet/go-random-files) module
+
+```bash
+go get -u github.com/jbenet/go-random-files/random-files
+```
+
+Run tests with
+```bash
+./test/pack-basic.sh
+./test/pack-serve.sh
+```
+
 ## Spec
 
 Read the `ipfs-pack` work-in-progress "spec" here: [Spec (WIP)](./spec.md).
