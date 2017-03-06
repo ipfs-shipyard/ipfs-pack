@@ -23,7 +23,7 @@ import (
 
 var repoCommand = cli.Command{
 	Name:  "repo",
-	Usage: "manipulate the ipfs repo cache associated with this pack",
+	Usage: "manipulate the ipfs repo cache associated with this pack.",
 	Subcommands: []cli.Command{
 		repoRegenCommand,
 		repoGcCommand,
@@ -34,7 +34,7 @@ var repoCommand = cli.Command{
 
 var repoRegenCommand = cli.Command{
 	Name:  "regen",
-	Usage: "regenerate ipfs-pack repo for this pack",
+	Usage: "regenerate ipfs-pack repo for this pack.",
 	Action: func(c *cli.Context) error {
 		fi, err := os.Open(ManifestFilename)
 		if err != nil {
@@ -124,7 +124,7 @@ var repoRegenCommand = cli.Command{
 
 var repoRmCommand = cli.Command{
 	Name:  "rm",
-	Usage: "remove this pack's ipfs repo",
+	Usage: "remove this pack's ipfs repo.",
 	Action: func(c *cli.Context) error {
 		packpath := filepath.Join(cwd, PackRepo)
 		if !fsrepo.IsInitialized(packpath) {
@@ -137,7 +137,7 @@ var repoRmCommand = cli.Command{
 
 var repoGcCommand = cli.Command{
 	Name:  "gc",
-	Usage: "garbage collect the pack repo",
+	Usage: "garbage collect the pack repo.",
 	Action: func(c *cli.Context) error {
 		packpath := filepath.Join(cwd, PackRepo)
 		if !fsrepo.IsInitialized(packpath) {
@@ -178,7 +178,7 @@ var repoGcCommand = cli.Command{
 
 var repoLsCommand = cli.Command{
 	Name:  "ls",
-	Usage: "list all cids in the pack repo",
+	Usage: "list all cids in the pack repo.",
 	Action: func(c *cli.Context) error {
 		packpath := filepath.Join(cwd, PackRepo)
 		if !fsrepo.IsInitialized(packpath) {

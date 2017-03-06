@@ -73,6 +73,8 @@ func doMain() error {
 	}
 
 	app := cli.NewApp()
+	app.Usage = "A filesystem packing tool."
+	app.Version = "v0.1.0"
 	app.Commands = []cli.Command{
 		makePackCommand,
 		verifyPackCommand,
@@ -89,7 +91,7 @@ var makePackCommand = cli.Command{
 	Flags: []cli.Flag{
 		cli.BoolFlag{
 			Name:  "verbose",
-			Usage: "enable verbose output",
+			Usage: "enable verbose output.",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -162,11 +164,11 @@ var makePackCommand = cli.Command{
 
 var servePackCommand = cli.Command{
 	Name:  "serve",
-	Usage: "start an ipfs node to serve this pack's contents",
+	Usage: "start an ipfs node to serve this pack's contents.",
 	Flags: []cli.Flag{
 		cli.BoolTFlag{
 			Name:  "verify",
-			Usage: "verify integrity of pack before serving",
+			Usage: "verify integrity of pack before serving.",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -249,7 +251,7 @@ var servePackCommand = cli.Command{
 
 var verifyPackCommand = cli.Command{
 	Name:  "verify",
-	Usage: "verifies the ipfs-pack manifest file is correct",
+	Usage: "verifies the ipfs-pack manifest file is correct.",
 	Action: func(c *cli.Context) error {
 		// TODO: check for files in pack that arent in manifest
 		fi, err := os.Open(ManifestFilename)
