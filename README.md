@@ -11,7 +11,14 @@
 
 ## Installing
 
-With go installed, simply run `make build`.
+Pre-built binaries are available on the [ipfs distributions page](https://dist.ipfs.io/#ipfs-pack).
+
+### From source
+If there is not a pre-built binary for your system, or you'd like to try out
+unreleased features, or for any other reason you want to build from source, its
+relatively simple.  First, make sure you have go installed and properly
+configured. [This guide](https://golang.org/doc/install) from the go team
+should help with that.  Once thats done, simply run `make build`.
 
 ## Usage
 
