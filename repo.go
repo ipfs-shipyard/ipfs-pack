@@ -36,17 +36,21 @@ var repoRegenCommand = cli.Command{
 	Name:  "regen",
 	Usage: "regenerate ipfs-pack repo for this pack.",
 	Action: func(c *cli.Context) error {
-		fi, err := os.Open(ManifestFilename)
-		if err != nil {
-			switch {
-			case os.IsNotExist(err):
-				return fmt.Errorf("error: no %s found", ManifestFilename)
-			default:
-				return fmt.Errorf("error opening %s: %s", ManifestFilename, err)
+		workdir := cwd
+		if c.Args().Present() {
+			argpath, err := filepath.Abs(c.Args().First())
+			if err != nil {
+				return err
 			}
+			workdir = argpath
 		}
 
-		r, err := getRepo()
+		fi, err := openManifestFile(workdir)
+		if err != nil {
+			return err
+		}
+
+		r, err := getRepo(workdir)
 		if err != nil {
 			return err
 		}
@@ -91,7 +95,7 @@ var repoRegenCommand = cli.Command{
 				continue
 			}
 
-			nd, err := addItem(path, st, params)
+			nd, err := addItem(filepath.Join(workdir, path), st, params)
 			if err != nil {
 				return err
 			}
@@ -153,7 +157,7 @@ var repoGcCommand = cli.Command{
 		gcbs := blockstore.NewGCBlockstore(bstore, blockstore.NewGCLocker())
 		pinner := pin.NewPinner(fsr.Datastore(), ds, ds)
 
-		root, err := getManifestRoot()
+		root, err := getManifestRoot(cwd)
 		if err != nil {
 			return err
 		}
@@ -203,12 +207,12 @@ var repoLsCommand = cli.Command{
 	},
 }
 
-func getManifestRoot() (*cid.Cid, error) {
-	fi, err := os.Open(ManifestFilename)
+func getManifestRoot(workdir string) (*cid.Cid, error) {
+	fi, err := os.Open(filepath.Join(workdir, ManifestFilename))
 	if err != nil {
 		switch {
 		case os.IsNotExist(err):
-			return nil, fmt.Errorf("error: no %s found", ManifestFilename)
+			return nil, fmt.Errorf("error: no %s found in %s", ManifestFilename, workdir)
 		default:
 			return nil, fmt.Errorf("error opening %s: %s", ManifestFilename, err)
 		}

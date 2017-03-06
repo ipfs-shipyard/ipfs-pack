@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -20,8 +22,21 @@ import (
 	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
 )
 
-func getRepo() (repo.Repo, error) {
-	packpath := filepath.Join(cwd, ".ipfs-pack")
+func openManifestFile(workdir string) (*os.File, error) {
+	fi, err := os.Open(filepath.Join(workdir, ManifestFilename))
+	if err != nil {
+		switch {
+		case os.IsNotExist(err):
+			return nil, fmt.Errorf("error: no %s found in %s", ManifestFilename, workdir)
+		default:
+			return nil, fmt.Errorf("error opening %s: %s", ManifestFilename, err)
+		}
+	}
+	return fi, nil
+}
+
+func getRepo(workdir string) (repo.Repo, error) {
+	packpath := filepath.Join(workdir, ".ipfs-pack")
 	if !fsrepo.IsInitialized(packpath) {
 		cfg, err := config.Init(ioutil.Discard, 1024)
 		if err != nil {
@@ -65,12 +80,12 @@ func getAdder(dstore ds.Batching, fm *filestore.FileManager) (*cu.Adder, error) 
 	return adder, nil
 }
 
-func getFilteredDirFile() (files.File, error) {
-	contents, err := ioutil.ReadDir(cwd)
+func getFilteredDirFile(workdir string) (files.File, error) {
+	contents, err := ioutil.ReadDir(workdir)
 	if err != nil {
 		return nil, err
 	}
-	dirname := filepath.Base(cwd)
+	dirname := filepath.Base(workdir)
 
 	var farr []files.File
 	for _, ent := range contents {
@@ -80,12 +95,12 @@ func getFilteredDirFile() (files.File, error) {
 		if strings.HasPrefix(ent.Name(), ".") {
 			continue
 		}
-		f, err := files.NewSerialFile(filepath.Join(dirname, ent.Name()), filepath.Join(cwd, ent.Name()), false, ent)
+		f, err := files.NewSerialFile(filepath.Join(dirname, ent.Name()), filepath.Join(workdir, ent.Name()), false, ent)
 		if err != nil {
 			return nil, err
 		}
 		farr = append(farr, f)
 	}
 
-	return files.NewSliceFile(dirname, cwd, farr), nil
+	return files.NewSliceFile(dirname, workdir, farr), nil
 }

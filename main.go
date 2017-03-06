@@ -86,8 +86,9 @@ func doMain() error {
 }
 
 var makePackCommand = cli.Command{
-	Name:  "make",
-	Usage: "makes the package, overwriting the PackManifest file.",
+	Name:      "make",
+	Usage:     "makes the package, overwriting the PackManifest file.",
+	ArgsUsage: "<dir>",
 	Flags: []cli.Flag{
 		cli.BoolFlag{
 			Name:  "verbose",
@@ -95,8 +96,17 @@ var makePackCommand = cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
+		workdir := cwd
+		if c.Args().Present() {
+			argpath, err := filepath.Abs(c.Args().First())
+			if err != nil {
+				return err
+			}
+			workdir = argpath
+		}
+
 		verbose := c.Bool("verbose")
-		repo, err := getRepo()
+		repo, err := getRepo(workdir)
 		if err != nil {
 			return err
 		}
@@ -105,13 +115,13 @@ var makePackCommand = cli.Command{
 		if err != nil {
 			return err
 		}
-		dirname := filepath.Base(cwd)
+		dirname := filepath.Base(workdir)
 
 		output := make(chan interface{})
 		adder.Out = output
 
 		done := make(chan struct{})
-		manifest, err := os.Create(ManifestFilename)
+		manifest, err := os.Create(filepath.Join(workdir, ManifestFilename))
 		if err != nil {
 			return err
 		}
@@ -139,7 +149,7 @@ var makePackCommand = cli.Command{
 			}
 		}()
 
-		sf, err := getFilteredDirFile()
+		sf, err := getFilteredDirFile(workdir)
 		if err != nil {
 			return err
 		}
@@ -172,24 +182,33 @@ var servePackCommand = cli.Command{
 		},
 	},
 	Action: func(c *cli.Context) error {
-		packpath := filepath.Join(cwd, PackRepo)
+		workdir := cwd
+		if c.Args().Present() {
+			argpath, err := filepath.Abs(c.Args().First())
+			if err != nil {
+				return err
+			}
+			workdir = argpath
+		}
+
+		packpath := filepath.Join(workdir, PackRepo)
 		if !fsrepo.IsInitialized(packpath) {
 			return fmt.Errorf("TODO: autogen repo on serve")
 		}
 
-		r, err := getRepo()
+		r, err := getRepo(workdir)
 		if err != nil {
-			return err
+			return fmt.Errorf("error opening repo: %s", err)
 		}
 
 		verify := c.BoolT("verify")
 		if verify {
 			_, ds := buildDagserv(r.Datastore(), r.FileManager())
-			fi, err := os.Open(ManifestFilename)
+			fi, err := os.Open(filepath.Join(workdir, ManifestFilename))
 			if err != nil {
 				switch {
 				case os.IsNotExist(err):
-					return fmt.Errorf("error: no %s found", ManifestFilename)
+					return fmt.Errorf("error: no %s found in %s", ManifestFilename, workdir)
 				default:
 					return fmt.Errorf("error opening %s: %s", ManifestFilename, err)
 				}
@@ -198,9 +217,9 @@ var servePackCommand = cli.Command{
 
 			fmt.Println("Verifying pack contents before serving...")
 
-			problem, err := verifyPack(ds, fi)
+			problem, err := verifyPack(ds, workdir, fi)
 			if err != nil {
-				return err
+				return fmt.Errorf("error verifying pack: %s", err)
 			}
 
 			if problem {
@@ -210,7 +229,7 @@ var servePackCommand = cli.Command{
 			}
 		}
 
-		root, err := getManifestRoot()
+		root, err := getManifestRoot(workdir)
 		if err != nil {
 			return err
 		}
@@ -256,12 +275,21 @@ var verifyPackCommand = cli.Command{
 	Name:  "verify",
 	Usage: "verifies the ipfs-pack manifest file is correct.",
 	Action: func(c *cli.Context) error {
+		workdir := cwd
+		if c.Args().Present() {
+			argpath, err := filepath.Abs(c.Args().First())
+			if err != nil {
+				return err
+			}
+			workdir = argpath
+		}
+
 		// TODO: check for files in pack that arent in manifest
-		fi, err := os.Open(ManifestFilename)
+		fi, err := os.Open(filepath.Join(workdir, ManifestFilename))
 		if err != nil {
 			switch {
 			case os.IsNotExist(err):
-				return fmt.Errorf("error: no %s found", ManifestFilename)
+				return fmt.Errorf("error: no %s found in %s", ManifestFilename, workdir)
 			default:
 				return fmt.Errorf("error opening %s: %s", ManifestFilename, err)
 			}
@@ -269,9 +297,9 @@ var verifyPackCommand = cli.Command{
 
 		var dstore ds.Batching
 		var fm *filestore.FileManager
-		packpath := filepath.Join(cwd, ".ipfs-pack")
+		packpath := filepath.Join(workdir, ".ipfs-pack")
 		if fsrepo.IsInitialized(packpath) {
-			r, err := getRepo()
+			r, err := getRepo(workdir)
 			if err != nil {
 				return err
 			}
@@ -283,7 +311,7 @@ var verifyPackCommand = cli.Command{
 
 		_, ds := buildDagserv(dstore, fm)
 
-		issue, err := verifyPack(ds, fi)
+		issue, err := verifyPack(ds, workdir, fi)
 		if err != nil {
 			return err
 		}
@@ -297,11 +325,11 @@ var verifyPackCommand = cli.Command{
 	},
 }
 
-func verifyPack(ds dag.DAGService, manif io.Reader) (bool, error) {
+func verifyPack(ds dag.DAGService, workdir string, manif io.Reader) (bool, error) {
+	imp := DefaultImporterSettings.String()
+
 	var issue bool
 	scan := bufio.NewScanner(manif)
-
-	imp := DefaultImporterSettings.String()
 	for scan.Scan() {
 		parts := strings.SplitN(scan.Text(), "\t", 3)
 		hash := parts[0]
@@ -321,7 +349,7 @@ func verifyPack(ds dag.DAGService, manif io.Reader) (bool, error) {
 			Maxlinks:  h.DefaultLinksPerBlock,
 		}
 
-		ok, err := verifyItem(path, hash, params)
+		ok, err := verifyItem(path, hash, workdir, params)
 		if err != nil {
 			return false, err
 		}
@@ -332,11 +360,11 @@ func verifyPack(ds dag.DAGService, manif io.Reader) (bool, error) {
 	return issue, nil
 }
 
-func verifyItem(path, hash string, params *h.DagBuilderParams) (bool, error) {
-	st, err := os.Lstat(path)
+func verifyItem(path, hash, workdir string, params *h.DagBuilderParams) (bool, error) {
+	st, err := os.Lstat(filepath.Join(workdir, path))
 	switch {
 	case os.IsNotExist(err):
-		fmt.Printf("error: in manifest, missing from pack: %s\n", path)
+		fmt.Printf("error: item in manifest, missing from pack: %s\n", path)
 		return false, nil
 	default:
 		fmt.Printf("error: checking file %s: %s\n", path, err)
@@ -349,7 +377,7 @@ func verifyItem(path, hash string, params *h.DagBuilderParams) (bool, error) {
 		return true, nil
 	}
 
-	nd, err := addItem(path, st, params)
+	nd, err := addItem(filepath.Join(workdir, path), st, params)
 	if err != nil {
 		return false, err
 	}
