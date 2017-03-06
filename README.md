@@ -13,6 +13,44 @@
 
 With go installed, simply run `make build`.
 
+## Usage
+
+```
+$ ipfs-pack --help
+NAME:
+   ipfs-pack - A filesystem packing tool.
+
+USAGE:
+   ipfs-pack [global options] command [command options] [arguments...]
+
+VERSION:
+   v0.1.0
+
+COMMANDS:
+     make     makes the package, overwriting the PackManifest file.
+     verify   verifies the ipfs-pack manifest file is correct.
+     repo     manipulate the ipfs repo cache associated with this pack.
+     serve    start an ipfs node to serve this pack's contents.
+     help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --help, -h     show help
+   --version, -v  print the version
+```
+
+### Make a pack
+```
+$ cd /path/to/data/dir
+$ ipfs-pack make
+wrote PackManifest
+```
+
+### Verify a pack
+```
+$ ipfs-pack verify
+Pack verified successfully!
+```
+
 ## Testing
 Tests require the [random-files](https://github.com/jbenet/go-random-files) module
 

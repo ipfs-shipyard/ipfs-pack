@@ -318,9 +318,9 @@ var verifyPackCommand = cli.Command{
 		}
 
 		if !issue {
-			fmt.Println("Pack verified successfully!")
+			fmt.Println("pack verification succeeded") // nicola is an easter egg
 		} else {
-			fmt.Println("Pack verify found some corruption.")
+			return fmt.Errorf("error: pack verification failed")
 		}
 		return nil
 	},
@@ -384,7 +384,7 @@ func verifyItem(path, hash, workdir string, params *h.DagBuilderParams) (bool, e
 	}
 
 	if nd.Cid().String() != hash {
-		fmt.Printf("Checksum mismatch on %s. (%s)\n", path, nd.Cid().String())
+		fmt.Printf("error: checksum mismatch on %s. (%s)\n", path, nd.Cid().String())
 		return false, nil
 	}
 	return true, nil
