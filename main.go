@@ -123,7 +123,12 @@ var makePackCommand = cli.Command{
 			for v := range output {
 				count++
 				ao := v.(*cu.AddedObject)
-				towrite := "." + ao.Name[len(dirname):]
+				towrite := ao.Name[len(dirname):]
+				if len(towrite) > 0 {
+					towrite = towrite[1:]
+				} else {
+					towrite = "."
+				}
 				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, towrite)
 				if verbose {
 					fmt.Printf("                                       \r")

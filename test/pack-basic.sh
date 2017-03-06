@@ -21,6 +21,7 @@ test_pack() {
 		exit 1
 	fi
 
+	echo "pack verify succeeded"
 }
 
 random-files -seed=42 -files=6 -depth=3 -dirs=5 stuff
