@@ -91,12 +91,6 @@ var makePackCommand = cli.Command{
 	Name:      "make",
 	Usage:     "makes the package, overwriting the PackManifest file.",
 	ArgsUsage: "<dir>",
-	Flags: []cli.Flag{
-		cli.BoolFlag{
-			Name:  "verbose",
-			Usage: "enable verbose output.",
-		},
-	},
 	Action: func(c *cli.Context) error {
 		workdir := cwd
 		if c.Args().Present() {
@@ -107,7 +101,6 @@ var makePackCommand = cli.Command{
 			workdir = argpath
 		}
 
-		verbose := c.Bool("verbose")
 		repo, err := getRepo(workdir)
 		if err != nil {
 			return err
@@ -140,18 +133,10 @@ var makePackCommand = cli.Command{
 		go func() {
 			defer close(done)
 			defer manifest.Close()
-			var count int
 			var sizetotal int64
 			var sizethis int64
 			for v := range output {
-				count++
 				ao := v.(*cu.AddedObject)
-				towrite := ao.Name[len(dirname):]
-				if len(towrite) > 0 {
-					towrite = towrite[1:]
-				} else {
-					towrite = "."
-				}
 				if ao.Bytes == 0 {
 					sizetotal += sizethis
 					sizethis = 0
@@ -159,11 +144,16 @@ var makePackCommand = cli.Command{
 					sizethis = ao.Bytes
 					bar.Set64(sizetotal + sizethis)
 				}
-				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, towrite)
-				if verbose {
-					fmt.Printf("                                       \r")
-					fmt.Printf("Processed %d files...\r", count)
+				if ao.Hash == "" {
+					continue
 				}
+				towrite := ao.Name[len(dirname):]
+				if len(towrite) > 0 {
+					towrite = towrite[1:]
+				} else {
+					towrite = "."
+				}
+				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, towrite)
 			}
 		}()
 
