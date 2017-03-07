@@ -28,6 +28,8 @@ import (
 	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	node "gx/ipfs/QmRSU5EqqWVZSNdbU51yXmVoF1uNw3JgTNB6RaiL7DZM16/go-ipld-node"
 	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
+
+	pb "gx/ipfs/QmeWjRodbcZFKe5tMN7poEx3izym6osrLSnTLf9UjJZBbs/pb"
 )
 
 var (
@@ -119,6 +121,7 @@ var makePackCommand = cli.Command{
 
 		output := make(chan interface{})
 		adder.Out = output
+		adder.Progress = true
 
 		done := make(chan struct{})
 		manifest, err := os.Create(filepath.Join(workdir, ManifestFilename))
@@ -128,10 +131,18 @@ var makePackCommand = cli.Command{
 
 		imp := DefaultImporterSettings.String()
 
+		bar := pb.New64(-1)
+		bar.Units = pb.U_BYTES
+		bar.Start()
+		bar.ShowSpeed = true
+		bar.ShowPercent = false
+
 		go func() {
 			defer close(done)
 			defer manifest.Close()
 			var count int
+			var sizetotal int64
+			var sizethis int64
 			for v := range output {
 				count++
 				ao := v.(*cu.AddedObject)
@@ -140,6 +151,13 @@ var makePackCommand = cli.Command{
 					towrite = towrite[1:]
 				} else {
 					towrite = "."
+				}
+				if ao.Bytes == 0 {
+					sizetotal += sizethis
+					sizethis = 0
+				} else {
+					sizethis = ao.Bytes
+					bar.Set64(sizetotal + sizethis)
 				}
 				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, towrite)
 				if verbose {
@@ -154,6 +172,17 @@ var makePackCommand = cli.Command{
 			return err
 		}
 
+		go func() {
+			sizer := sf.(files.SizeFile)
+			size, err := sizer.Size()
+			if err != nil {
+				fmt.Println("warning: could not compute size:", err)
+				return
+			}
+			bar.Total = size
+			bar.ShowPercent = true
+		}()
+
 		err = adder.AddFile(sf)
 		if err != nil {
 			return err
@@ -166,10 +195,15 @@ var makePackCommand = cli.Command{
 
 		close(output)
 		<-done
-		fmt.Println("wrote PackManifest")
 
+		mes := "wrote PackManifest"
+		clearBar(bar, mes)
 		return nil
 	},
+}
+
+func clearBar(bar *pb.ProgressBar, mes string) {
+	fmt.Printf("\r%s%s\n", mes, strings.Repeat(" ", bar.GetWidth()-len(mes)))
 }
 
 var servePackCommand = cli.Command{
