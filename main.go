@@ -117,7 +117,8 @@ var makePackCommand = cli.Command{
 		adder.Progress = true
 
 		done := make(chan struct{})
-		manifest, err := os.Create(filepath.Join(workdir, ManifestFilename))
+		manifestName := filepath.Join(workdir, ManifestFilename)
+		manifest, err := os.Create(manifestName + ".tmp")
 		if err != nil {
 			return err
 		}
@@ -185,6 +186,13 @@ var makePackCommand = cli.Command{
 
 		close(output)
 		<-done
+		err = os.Rename(ManifestFilename+".tmp", ManifestFilename)
+		if err != nil {
+			fmt.Printf("Pack creation completed sucessfully, but we failed to rename '%s' to '%s' due to the following error:\n", ManifestFilename+".tmp", ManifestFilename)
+			fmt.Println(err)
+			fmt.Println("To resolve the issue, manually rename the mentioned file.")
+			os.Exit(1)
+		}
 
 		mes := "wrote PackManifest"
 		clearBar(bar, mes)
