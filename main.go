@@ -57,21 +57,55 @@ func main() {
 	}
 }
 
-func doMain() error {
-	proffi := os.Getenv("IPFS_PACK_PROFILE")
+func setupProfiling() (func(), error) {
+	halt := func() {}
+
+	proffi := os.Getenv("IPFS_PACK_CPU_PROFILE")
 	if proffi != "" {
 		fi, err := os.Create(proffi)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		defer fi.Close()
 		err = pprof.StartCPUProfile(fi)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		defer pprof.StopCPUProfile()
+		halt = func() {
+			pprof.StopCPUProfile()
+			fi.Close()
+		}
+	}
+
+	memprofi := os.Getenv("IPFS_PACK_MEM_PROFILE")
+	if memprofi != "" {
+		go func() {
+			for range time.NewTicker(time.Second * 5).C {
+				fi, err := os.Create(memprofi)
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "error writing heap profile: %s", err)
+					return
+				}
+
+				if err := pprof.WriteHeapProfile(fi); err != nil {
+					fmt.Fprintf(os.Stderr, "error writing heap profile: %s", err)
+					return
+				}
+
+				fi.Close()
+			}
+		}()
+	}
+
+	return halt, nil
+}
+
+func doMain() error {
+	if haltprof, err := setupProfiling(); err != nil {
+		return err
+	} else {
+		defer haltprof()
 	}
 
 	app := cli.NewApp()
