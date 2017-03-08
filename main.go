@@ -186,9 +186,9 @@ var makePackCommand = cli.Command{
 
 		close(output)
 		<-done
-		err = os.Rename(ManifestFilename+".tmp", ManifestFilename)
+		err = os.Rename(manifestName+".tmp", manifestName)
 		if err != nil {
-			fmt.Printf("Pack creation completed sucessfully, but we failed to rename '%s' to '%s' due to the following error:\n", ManifestFilename+".tmp", ManifestFilename)
+			fmt.Printf("Pack creation completed sucessfully, but we failed to rename '%s' to '%s' due to the following error:\n", manifestName+".tmp", manifestName)
 			fmt.Println(err)
 			fmt.Println("To resolve the issue, manually rename the mentioned file.")
 			os.Exit(1)
