@@ -89,7 +89,7 @@ func getFilteredDirFile(workdir string) (files.File, error) {
 
 	var farr []files.File
 	for _, ent := range contents {
-		if ent.Name() == ManifestFilename {
+		if ent.Name() == ManifestFilename || ent.Name() == ManifestFilename+".tmp" {
 			continue
 		}
 		if strings.HasPrefix(ent.Name(), ".") {
