@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"runtime/pprof"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	dag "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/merkledag"
 	fsrepo "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/repo/fsrepo"
 	ft "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/unixfs"
+	cid "gx/ipfs/QmcTcsTvfaeEBRFo1TkFgT8sRmgi1n1LTZpecfVP8fzpGD/go-cid"
 
 	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
 	node "gx/ipfs/QmRSU5EqqWVZSNdbU51yXmVoF1uNw3JgTNB6RaiL7DZM16/go-ipld-node"
@@ -31,6 +33,8 @@ import (
 
 	pb "gx/ipfs/QmeWjRodbcZFKe5tMN7poEx3izym6osrLSnTLf9UjJZBbs/pb"
 )
+
+const PackVersion = "v0.2.0"
 
 var (
 	cwd string
@@ -109,8 +113,8 @@ func doMain() error {
 	}
 
 	app := cli.NewApp()
-	app.Usage = "A filesystem packing tool."
-	app.Version = "v0.1.0"
+	app.Usage = "A filesystem packing tool"
+	app.Version = PackVersion
 	app.Commands = []cli.Command{
 		makePackCommand,
 		verifyPackCommand,
@@ -123,7 +127,7 @@ func doMain() error {
 
 var makePackCommand = cli.Command{
 	Name:      "make",
-	Usage:     "makes the package, overwriting the PackManifest file.",
+	Usage:     "makes the package, overwriting the PackManifest file",
 	ArgsUsage: "<dir>",
 	Action: func(c *cli.Context) error {
 		workdir := cwd
@@ -159,11 +163,13 @@ var makePackCommand = cli.Command{
 
 		imp := DefaultImporterSettings.String()
 
+		fmt.Println("Building IPFS Pack")
+
 		bar := pb.New64(-1)
 		bar.Units = pb.U_BYTES
-		bar.Start()
 		bar.ShowSpeed = true
 		bar.ShowPercent = false
+		bar.Start()
 
 		go func() {
 			defer close(done)
@@ -237,14 +243,53 @@ var makePackCommand = cli.Command{
 func clearBar(bar *pb.ProgressBar, mes string) {
 	fmt.Printf("\r%s%s\n", mes, strings.Repeat(" ", bar.GetWidth()-len(mes)))
 }
+func getPackRoot(nd *core.IpfsNode, workdir string) (node.Node, error) {
+	root, err := getManifestRoot(workdir)
+	if err != nil {
+		return nil, err
+	}
+
+	proot, err := nd.DAG.Get(context.Background(), root)
+	if err != nil {
+		return nil, err
+	}
+
+	pfi, err := os.Open(filepath.Join(workdir, ManifestFilename))
+	if err != nil {
+		return nil, err
+	}
+
+	manifhash, err := cu.Add(nd, pfi)
+	if err != nil {
+		return nil, err
+	}
+
+	manifcid, err := cid.Decode(manifhash)
+	if err != nil {
+		return nil, err
+	}
+
+	manifnode, err := nd.DAG.Get(context.Background(), manifcid)
+	if err != nil {
+		return nil, err
+	}
+
+	prootpb := proot.(*dag.ProtoNode)
+	prootpb.AddNodeLinkClean(ManifestFilename, manifnode.(*dag.ProtoNode))
+	_, err = nd.DAG.Add(prootpb)
+	if err != nil {
+		return nil, err
+	}
+	return prootpb, nil
+}
 
 var servePackCommand = cli.Command{
 	Name:  "serve",
-	Usage: "start an ipfs node to serve this pack's contents.",
+	Usage: "start an ipfs node to serve this pack's contents",
 	Flags: []cli.Flag{
 		cli.BoolTFlag{
 			Name:  "verify",
-			Usage: "verify integrity of pack before serving.",
+			Usage: "verify integrity of pack before serving",
 		},
 	},
 	Action: func(c *cli.Context) error {
@@ -256,10 +301,14 @@ var servePackCommand = cli.Command{
 			}
 			workdir = argpath
 		}
+		if _, err := os.Stat(workdir); os.IsNotExist(err) {
+			fmt.Printf("No such directory: '%s'\n\nCOMMAND HELP:\n", workdir)
+			return cli.ShowCommandHelp(c, "serve")
+		}
 
 		packpath := filepath.Join(workdir, PackRepo)
 		if !fsrepo.IsInitialized(packpath) {
-			return fmt.Errorf("TODO: autogen repo on serve")
+			return fmt.Errorf("No ipfs-pack found in '%s'\nplease run 'ipfs-pack make' before 'ipfs-pack serve'", cwd)
 		}
 
 		r, err := getRepo(workdir)
@@ -281,7 +330,7 @@ var servePackCommand = cli.Command{
 			}
 			defer fi.Close()
 
-			fmt.Println("Verifying pack contents before serving...")
+			fmt.Print("Verifying pack contents before serving...")
 
 			problem, err := verifyPack(ds, workdir, fi)
 			if err != nil {
@@ -289,53 +338,129 @@ var servePackCommand = cli.Command{
 			}
 
 			if problem {
-				return fmt.Errorf("Pack verify failed, refusing to serve.\n  To continue, Fix the files contents and re-run 'ipfs-pack serve'\n  If these changes were intentional, re-run 'ipfs-pack make' to regenerate the manifest")
+				fmt.Println()
+				return fmt.Errorf(`Pack verify failed, refusing to serve.
+  If you meant to change the files, re-run 'ipfs-pack make' to rebuild the manifest
+  Otherwise, replace the bad files with the originals and run 'ipfs-pack serve' again`)
 			} else {
-				fmt.Println("Verified pack, starting server...")
+				fmt.Printf("\r" + QClrLine + "Verified pack, starting server...")
 			}
 		}
 
-		root, err := getManifestRoot(workdir)
-		if err != nil {
-			return err
-		}
-
 		cfg := &core.BuildCfg{
-			Online: true,
-			Repo:   r,
+			Online:  true,
+			Repo:    r,
+			Routing: core.DHTClientOption,
 		}
 
 		nd, err := core.NewNode(context.Background(), cfg)
 		if err != nil {
 			return err
 		}
-		fmt.Println("Serving data in this pack to the network...")
-		fmt.Printf("Peer Multiaddrs:\n")
-		for _, a := range nd.PeerHost.Addrs() {
-			fmt.Printf("    %s/ipfs/%s\n", a, nd.Identity.Pretty())
+
+		proot, err := getPackRoot(nd, workdir)
+		if err != nil {
+			return err
 		}
 
-		fmt.Printf("\nPack root hash is /ipfs/%s\n\n\n\n", root)
-		tick := time.NewTicker(time.Second * 2)
+		totsize, err := proot.(*dag.ProtoNode).Size()
+		if err != nil {
+			return err
+		}
+
+		fmt.Print(QReset)
+		putMessage(1, color(Cyan, "ipfs-pack"))
+		padPrint(3, "Pack Status", color(Green, "serving globally"))
+		padPrint(4, "Uptime", "0m")
+		padPrint(5, "Version", PackVersion)
+		padPrint(6, "Pack Size", human.Bytes(totsize))
+		padPrint(7, "Connections", "0 peers")
+		padPrint(8, "PeerID", nd.Identity.Pretty())
+		padPrint(10, "Shared", "blocks      total up    rate up")
+		padPrint(11, "", "0            0           0")
+
+		padPrint(13, "Pack Root Hash", fmt.Sprintf("dweb:%s", color(Blue, "/ipfs/"+proot.Cid().String())))
+
+		addrs := nd.PeerHost.Addrs()
+		putMessage(15, "Addresses")
+		for i, a := range addrs {
+			putMessage(16+i, a.String()+"/ipfs/"+nd.Identity.Pretty())
+		}
+
+		bottom := 16 + len(addrs)
+		lg := NewLog(bottom+3, 10)
+		putMessage(bottom+1, "Activity Log")
+		putMessage(bottom+2, "------------")
+		putMessage(bottom+15, "[Press Ctrl+c to shutdown]")
+
+		tick := time.NewTicker(time.Second)
+		provdelay := time.After(time.Second * 5)
+		start := time.Now()
+		addlog := make(chan string, 16)
+		nd.PeerHost.Network().Notify(&LogNotifee{addlog})
+		killed := make(chan os.Signal)
+		signal.Notify(killed, os.Interrupt)
+
+		var provinprogress bool
 		for {
+			putMessage(bottom+13, "")
 			select {
 			case <-nd.Context().Done():
 				return nil
 			case <-tick.C:
 				npeers := len(nd.PeerHost.Network().Peers())
+				padPrint(7, "Connections", fmt.Sprint(npeers)+" peers")
+
 				st, err := nd.Exchange.(*bitswap.Bitswap).Stat()
 				if err != nil {
 					fmt.Println("error getting block stat: ", err)
 					continue
 				}
-				fmt.Printf("\033[1A")
-				fmt.Printf(strings.Repeat("    ", 12) + "\r")
-				fmt.Printf("Libp2p Peers: %4d\nShared:     %6d blocks, %s total data uploaded.   \r", npeers, st.BlocksSent, human.Bytes(st.DataSent))
+
+				bw := nd.Reporter.GetBandwidthTotals()
+				printDataSharedLine(11, st.BlocksSent, bw.TotalOut, bw.RateOut)
+				printTime(4, start)
+			case <-provdelay:
+				if !provinprogress {
+					lg.Add("announcing pack content to the network")
+					done := make(chan time.Time)
+					provdelay = done
+					go func() {
+						ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+						err := nd.Routing.Provide(ctx, proot.Cid())
+						if err != nil {
+							lg.Add(fmt.Sprintf("error notifying network about our pack: %s", err))
+						}
+						close(done)
+						cancel()
+					}()
+					provinprogress = true
+				} else {
+					lg.Add("completed network announcement!")
+					provdelay = time.After(time.Hour * 12)
+					provinprogress = false
+				}
+			case mes := <-addlog:
+				lg.Add(mes)
+				lg.Print()
+			case <-killed:
+				fmt.Println(QReset)
+				fmt.Println("Shutting down ipfs-pack node...")
+				nd.Close()
+				return nil
 			}
 		}
 
 		return nil
 	},
+}
+
+func printTime(line int, start time.Time) {
+	t := time.Since(start)
+	h := int(t.Hours())
+	m := int(t.Minutes()) % 60
+	s := int(t.Seconds()) % 60
+	padPrint(line, "Uptime", fmt.Sprintf("%dh %dm %ds", h, m, s))
 }
 
 var verifyPackCommand = cli.Command{
@@ -404,6 +529,9 @@ func verifyPack(ds dag.DAGService, workdir string, manif io.Reader) (bool, error
 		path := parts[2]
 
 		if fmtstr != imp {
+			if !issue {
+				fmt.Println()
+			}
 			fmt.Printf("error: unsupported importer settings in manifest file: %s\n", fmtstr)
 			issue = true
 			continue
@@ -416,44 +544,47 @@ func verifyPack(ds dag.DAGService, workdir string, manif io.Reader) (bool, error
 			Maxlinks:  h.DefaultLinksPerBlock,
 		}
 
-		ok, err := verifyItem(path, hash, workdir, params)
+		ok, mes, err := verifyItem(path, hash, workdir, params)
 		if err != nil {
 			return false, err
 		}
 		if !ok {
+			if !issue {
+				fmt.Println()
+			}
+			fmt.Println(mes)
 			issue = true
+			continue
 		}
 	}
 	return issue, nil
 }
 
-func verifyItem(path, hash, workdir string, params *h.DagBuilderParams) (bool, error) {
+func verifyItem(path, hash, workdir string, params *h.DagBuilderParams) (bool, string, error) {
 	st, err := os.Lstat(filepath.Join(workdir, path))
 	switch {
 	case os.IsNotExist(err):
-		fmt.Printf("error: item in manifest, missing from pack: %s\n", path)
-		return false, nil
+		return false, fmt.Sprintf("error: item in manifest, missing from pack: %s", path), nil
 	default:
-		fmt.Printf("error: checking file %s: %s\n", path, err)
-		return false, nil
+		return false, fmt.Sprintf("error: checking file %s: %s", path, err), nil
 	case err == nil:
 		// continue
 	}
 
 	if st.IsDir() {
-		return true, nil
+		return true, "", nil
 	}
 
 	nd, err := addItem(filepath.Join(workdir, path), st, params)
 	if err != nil {
-		return false, err
+		return false, "", err
 	}
 
 	if nd.Cid().String() != hash {
-		fmt.Printf("error: checksum mismatch on %s. (%s)\n", path, nd.Cid().String())
-		return false, nil
+		s := fmt.Sprintf("error: checksum mismatch on %s. (%s)", path, nd.Cid().String())
+		return false, s, nil
 	}
-	return true, nil
+	return true, "", nil
 }
 
 func addItem(path string, st os.FileInfo, params *h.DagBuilderParams) (node.Node, error) {
