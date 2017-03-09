@@ -14,27 +14,27 @@ import (
 
 	cli "gx/ipfs/QmVahSzvB3Upf5dAW15dpktF6PXb4z9V5LohmbcUqktyF4/cli"
 
-	files "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/commands/files"
-	core "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/core"
-	cu "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/core/coreunix"
-	bitswap "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/exchange/bitswap"
-	filestore "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/filestore"
-	balanced "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/importer/balanced"
-	chunk "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/importer/chunk"
-	h "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/importer/helpers"
-	dag "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/merkledag"
-	fsrepo "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/repo/fsrepo"
-	ft "gx/ipfs/QmQ3zzxvxdX2YGogDpx23YHKRZ4rmqGoXmnoJNdwzxtkhc/go-ipfs/unixfs"
-	cid "gx/ipfs/QmcTcsTvfaeEBRFo1TkFgT8sRmgi1n1LTZpecfVP8fzpGD/go-cid"
+	cid "gx/ipfs/QmV5gPoRsjN1Gid3LMdNZTyfCtP2DsvqEbMAmz82RmmiGk/go-cid"
+	files "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/commands/files"
+	core "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/core"
+	cu "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/core/coreunix"
+	bitswap "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/exchange/bitswap"
+	filestore "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/filestore"
+	balanced "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/importer/balanced"
+	chunk "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/importer/chunk"
+	h "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/importer/helpers"
+	dag "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/merkledag"
+	fsrepo "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/repo/fsrepo"
+	ft "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/unixfs"
 
 	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
-	node "gx/ipfs/QmRSU5EqqWVZSNdbU51yXmVoF1uNw3JgTNB6RaiL7DZM16/go-ipld-node"
 	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
+	node "gx/ipfs/QmYDscK7dmdo2GZ9aumS8s5auUUAH5mR1jvj5pYhWusfK7/go-ipld-node"
 
 	pb "gx/ipfs/QmeWjRodbcZFKe5tMN7poEx3izym6osrLSnTLf9UjJZBbs/pb"
 )
 
-const PackVersion = "v0.2.0"
+const PackVersion = "v0.3.0"
 
 var (
 	cwd string
