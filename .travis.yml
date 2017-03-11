@@ -1,0 +1,18 @@
+os:
+  - linux
+  - osx
+
+language: go
+
+go:
+    - 1.7
+
+env:
+    - TEST_VERBOSE=1
+
+install:
+    - go get
+    - go install
+
+script:
+  - make test
