@@ -8,9 +8,9 @@
   },
   "gxDependencies": [
     {
-      "hash": "QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM",
+      "hash": "Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1",
       "name": "go-ipfs",
-      "version": "0.4.6"
+      "version": "0.4.9-rc2"
     },
     {
       "author": "whyrusleeping",

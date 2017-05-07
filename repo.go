@@ -10,15 +10,15 @@ import (
 
 	cli "gx/ipfs/QmVahSzvB3Upf5dAW15dpktF6PXb4z9V5LohmbcUqktyF4/cli"
 
-	blockstore "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/blocks/blockstore"
-	h "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/importer/helpers"
-	mfs "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/mfs"
-	pin "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/pin"
-	gc "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/pin/gc"
-	fsrepo "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/repo/fsrepo"
-	ft "gx/ipfs/QmcJ27bgSxFy3Gx9VQtUoN8ihykxrCMmz6r1S9WsXM6FJM/go-ipfs/unixfs"
+	blockstore "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/blocks/blockstore"
+	h "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/importer/helpers"
+	mfs "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/mfs"
+	pin "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/pin"
+	gc "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/pin/gc"
+	fsrepo "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/repo/fsrepo"
+	ft "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/unixfs"
 
-	cid "gx/ipfs/QmV5gPoRsjN1Gid3LMdNZTyfCtP2DsvqEbMAmz82RmmiGk/go-cid"
+	cid "gx/ipfs/QmYhQaCYEcaPPjxJX7YcPcVKkQfRy6sJ7B3XmGFk82XYdQ/go-cid"
 )
 
 var repoCommand = cli.Command{
@@ -167,13 +167,17 @@ var repoGcCommand = cli.Command{
 			return err
 		}
 
-		out, err := gc.GC(context.Background(), gcbs, ds, pinner, nil)
+		out := gc.GC(context.Background(), gcbs, ds, pinner, nil)
 		if err != nil {
 			return err
 		}
 
 		for k := range out {
-			fmt.Printf("removed %s\n", k)
+			if k.Error != nil {
+				fmt.Printf("GC Error: %s\n", k.Error)
+			} else {
+				fmt.Printf("removed %s\n", k.KeyRemoved)
+			}
 		}
 
 		return nil
