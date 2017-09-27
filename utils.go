@@ -8,18 +8,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	blockstore "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/blocks/blockstore"
-	blockservice "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/blockservice"
-	files "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/commands/files"
-	cu "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/core/coreunix"
-	offline "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/exchange/offline"
-	filestore "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/filestore"
-	dag "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/merkledag"
-	repo "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/repo"
-	config "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/repo/config"
-	fsrepo "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/repo/fsrepo"
+	blockstore "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/blocks/blockstore"
+	blockservice "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/blockservice"
+	files "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/commands/files"
+	cu "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/core/coreunix"
+	offline "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/exchange/offline"
+	filestore "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/filestore"
+	dag "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/merkledag"
+	repo "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/repo"
+	config "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/repo/config"
+	fsrepo "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/repo/fsrepo"
 
-	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
+	ds "gx/ipfs/QmVSase1JP7cq9QkPT46oNwdp9pT6kBkG3oqS14y3QcZjG/go-datastore"
 )
 
 func openManifestFile(workdir string) (*os.File, error) {

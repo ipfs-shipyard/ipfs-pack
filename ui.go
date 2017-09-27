@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	net "gx/ipfs/QmNa31VPzC561NWwRsJLE7nGYZYuuD2QfpK2b1q9BK54J1/go-libp2p-net"
 	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
-	net "gx/ipfs/QmVHSBsn8LEeay8m5ERebgUVuhzw838PsyTttCmP6GMJkg/go-libp2p-net"
-	ma "gx/ipfs/QmcyqRMCAXVtYPS4DiBrA7sezL9rRGfW8Ctx7cywL4TXJj/go-multiaddr"
+	ma "gx/ipfs/QmXY77cVe7rVRQXZZQRioukUM7aRW3BTcAgJe12MCtb3Ji/go-multiaddr"
 )
 
 const (
@@ -56,7 +56,7 @@ func putMessage(line int, mes string) {
 	fmt.Printf("\033[%d;0H%s%s", line, QClrLine, mes)
 }
 
-func printDataSharedLine(line int, bup int, totup int64, rateup float64) {
+func printDataSharedLine(line int, bup uint64, totup int64, rateup float64) {
 	pad := "            "
 	a := fmt.Sprintf("%d            ", bup)[:12]
 	b := (human.Bytes(uint64(totup)) + pad)[:12]

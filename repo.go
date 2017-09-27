@@ -10,15 +10,15 @@ import (
 
 	cli "gx/ipfs/QmVahSzvB3Upf5dAW15dpktF6PXb4z9V5LohmbcUqktyF4/cli"
 
-	blockstore "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/blocks/blockstore"
-	h "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/importer/helpers"
-	mfs "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/mfs"
-	pin "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/pin"
-	gc "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/pin/gc"
-	fsrepo "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/repo/fsrepo"
-	ft "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/unixfs"
+	blockstore "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/blocks/blockstore"
+	h "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/importer/helpers"
+	mfs "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/mfs"
+	pin "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/pin"
+	gc "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/pin/gc"
+	fsrepo "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/repo/fsrepo"
+	ft "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/unixfs"
 
-	cid "gx/ipfs/QmYhQaCYEcaPPjxJX7YcPcVKkQfRy6sJ7B3XmGFk82XYdQ/go-cid"
+	cid "gx/ipfs/QmNp85zy9RLrQ5oQD4hPyS39ezrrXpcaa7R4Y9kxdWQLLQ/go-cid"
 )
 
 var repoCommand = cli.Command{

@@ -14,22 +14,22 @@ import (
 
 	cli "gx/ipfs/QmVahSzvB3Upf5dAW15dpktF6PXb4z9V5LohmbcUqktyF4/cli"
 
-	cid "gx/ipfs/QmYhQaCYEcaPPjxJX7YcPcVKkQfRy6sJ7B3XmGFk82XYdQ/go-cid"
-	files "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/commands/files"
-	core "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/core"
-	cu "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/core/coreunix"
-	bitswap "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/exchange/bitswap"
-	filestore "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/filestore"
-	balanced "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/importer/balanced"
-	chunk "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/importer/chunk"
-	h "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/importer/helpers"
-	dag "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/merkledag"
-	fsrepo "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/repo/fsrepo"
-	ft "gx/ipfs/Qmc54PqZpTxK1t5PzrZkuSzWFiw3E1RwMDuSefKwh115y1/go-ipfs/unixfs"
+	files "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/commands/files"
+	core "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/core"
+	cu "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/core/coreunix"
+	bitswap "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/exchange/bitswap"
+	filestore "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/filestore"
+	balanced "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/importer/balanced"
+	chunk "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/importer/chunk"
+	h "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/importer/helpers"
+	dag "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/merkledag"
+	fsrepo "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/repo/fsrepo"
+	ft "gx/ipfs/QmNUKMfTHQQpEwE8bUdv5qmKC3ymdW7zw82LFS8D6MQXmu/go-ipfs/unixfs"
+	cid "gx/ipfs/QmNp85zy9RLrQ5oQD4hPyS39ezrrXpcaa7R4Y9kxdWQLLQ/go-cid"
 
+	node "gx/ipfs/QmPN7cwmpcc4DWXb4KTB9dNAJgjuPY69h3npsMfhRrQL9c/go-ipld-format"
 	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
-	ds "gx/ipfs/QmRWDav6mzWseLWeYfVd5fvUKiVe9xNH29YfMF438fG364/go-datastore"
-	node "gx/ipfs/Qmb3Hm9QDFmfYuET4pu7Kyg8JV78jFa1nvZx5vnCZsK4ck/go-ipld-format"
+	ds "gx/ipfs/QmVSase1JP7cq9QkPT46oNwdp9pT6kBkG3oqS14y3QcZjG/go-datastore"
 
 	pb "gx/ipfs/QmeWjRodbcZFKe5tMN7poEx3izym6osrLSnTLf9UjJZBbs/pb"
 )
@@ -427,7 +427,7 @@ var servePackCommand = cli.Command{
 					provdelay = done
 					go func() {
 						ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-						err := nd.Routing.Provide(ctx, proot.Cid())
+						err := nd.Routing.Provide(ctx, proot.Cid(), true)
 						if err != nil {
 							lg.Add(fmt.Sprintf("error notifying network about our pack: %s", err))
 						}
