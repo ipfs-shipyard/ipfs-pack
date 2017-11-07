@@ -194,7 +194,7 @@ var makePackCommand = cli.Command{
 				} else {
 					towrite = "."
 				}
-				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, towrite)
+				fmt.Fprintf(manifest, "%s\t%s\t%s\n", ao.Hash, imp, escape(towrite))
 			}
 		}()
 
@@ -526,7 +526,12 @@ func verifyPack(ds dag.DAGService, workdir string, manif io.Reader) (bool, error
 		parts := strings.SplitN(scan.Text(), "\t", 3)
 		hash := parts[0]
 		fmtstr := parts[1]
-		path := parts[2]
+		path, err := unescape(parts[2])
+		if err != nil {
+			fmt.Printf("%v\n", err)
+			issue = true
+			continue
+		}
 
 		if fmtstr != imp {
 			if !issue {
