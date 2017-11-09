@@ -18,6 +18,8 @@ test_expect_success "Create sample data set" '
 		echo Hello >hello.txt &&
 		mkdir subdir &&
 		echo "Hello in subdir" >subdir/hello_in_subdir.txt
+		echo backslash > "back\slash"
+		echo ouch > `printf "nasty\tfile\n!"`
 	)
 '
 
@@ -35,7 +37,9 @@ test_expect_success "'ipfs-pack make' output looks good" '
 
 test_expect_success "PackManifest looks good" '
 	grep "subdir/hello_in_subdir.txt" workdir/PackManifest &&
-	grep "hello.txt" workdir/PackManifest
+	grep "hello.txt" workdir/PackManifest &&
+	grep -F "nasty\tfile\n!" workdir/PackManifest &&
+	grep -F "back\\\\slash" workdir/PackManifest
 '
 
 test_expect_success "'ipfs-pack verify' succeeds" '

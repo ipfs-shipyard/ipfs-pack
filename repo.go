@@ -67,7 +67,10 @@ var repoRegenCommand = cli.Command{
 			parts := strings.SplitN(scan.Text(), "\t", 3)
 			hash := parts[0]
 			fmts := parts[1]
-			path := parts[2]
+			path, err := unescape(parts[2])
+			if err != nil {
+				return err
+			}
 
 			if fmts != defaultFmts {
 				return fmt.Errorf("error: unsupported import settings string: %s != %s", fmts, defaultFmts)
