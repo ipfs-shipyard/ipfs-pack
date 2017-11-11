@@ -34,7 +34,7 @@ import (
 	pb "gx/ipfs/QmeWjRodbcZFKe5tMN7poEx3izym6osrLSnTLf9UjJZBbs/pb"
 )
 
-const PackVersion = "v0.4.0"
+const PackVersion = "v0.6.0"
 
 var (
 	cwd string

@@ -24,6 +24,6 @@
   "license": "",
   "name": "ipfs-pack",
   "releaseCmd": "git commit -a -m \"gx publish $VERSION\"",
-  "version": "0.4.0"
+  "version": "0.6.0"
 }
 
