@@ -274,8 +274,8 @@ func getPackRoot(nd *core.IpfsNode, workdir string) (node.Node, error) {
 		return nil, err
 	}
 
-	prootpb := proot.(*dag.ProtoNode)
-	prootpb.AddNodeLinkClean(ManifestFilename, manifnode.(*dag.ProtoNode))
+	prootpb := proot.(*dag.RawNode)
+	prootpb.AddNodeLinkClean(ManifestFilename, manifnode.(*dag.RawNode))
 	_, err = nd.DAG.Add(prootpb)
 	if err != nil {
 		return nil, err
@@ -363,7 +363,7 @@ var servePackCommand = cli.Command{
 			return err
 		}
 
-		totsize, err := proot.(*dag.ProtoNode).Size()
+		totsize, err := proot.(*dag.RawNode).Size()
 		if err != nil {
 			return err
 		}
@@ -604,7 +604,7 @@ func addItem(path string, st os.FileInfo, params *h.DagBuilderParams) (node.Node
 			return nil, err
 		}
 
-		nd := new(dag.ProtoNode)
+		nd := new(dag.RawNode)
 		nd.SetData(data)
 		return nd, nil
 	}
