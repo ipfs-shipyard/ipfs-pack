@@ -14,22 +14,23 @@ import (
 
 	cli "gx/ipfs/QmVahSzvB3Upf5dAW15dpktF6PXb4z9V5LohmbcUqktyF4/cli"
 
-	cid "gx/ipfs/QmNp85zy9RLrQ5oQD4hPyS39ezrrXpcaa7R4Y9kxdWQLLQ/go-cid"
-	files "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/commands/files"
-	core "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/core"
-	cu "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/core/coreunix"
-	bitswap "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/exchange/bitswap"
-	filestore "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/filestore"
-	balanced "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/importer/balanced"
-	chunk "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/importer/chunk"
-	h "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/importer/helpers"
-	dag "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/merkledag"
-	fsrepo "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/repo/fsrepo"
-	ft "gx/ipfs/QmdKL1GVaUaDVt3JUWiYQSLYRsJMym2KRWxsiXAeEU6pzX/go-ipfs/unixfs"
+	chunk "gx/ipfs/QmWo8jYc19ppG7YoTsrr2kEtLRbARTJho5oNXFTR6B7Peq/go-ipfs-chunker"
+	core "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/core"
+	cu "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/core/coreunix"
+	bitswap "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/exchange/bitswap"
+	filestore "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/filestore"
+	balanced "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/importer/balanced"
+	h "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/importer/helpers"
+	dag "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/merkledag"
+	fsrepo "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/repo/fsrepo"
+	ft "gx/ipfs/QmatUACvrFK3xYg1nd2iLAKfz7Yy5YB56tnzBYHpqiUuhn/go-ipfs/unixfs"
+	cid "gx/ipfs/QmcZfnkapfECQGcLZaf9B79NRg7cRa9EnZh4LSbkCzwNvY/go-cid"
+	files "gx/ipfs/QmceUdzxkimdYsgtX733uNgzf1DLHyBKN6ehGSp85ayppM/go-ipfs-cmdkit/files"
+	ipld "gx/ipfs/Qme5bWv7wtjUNGsK2BNGVUFPKiuxWrsqrtvYwCLRw8YFES/go-ipld-format"
 
-	node "gx/ipfs/QmPN7cwmpcc4DWXb4KTB9dNAJgjuPY69h3npsMfhRrQL9c/go-ipld-format"
 	human "gx/ipfs/QmPSBJL4momYnE7DcUyk2DVhD6rH488ZmHBGLbxNdhU44K/go-humanize"
-	ds "gx/ipfs/QmVSase1JP7cq9QkPT46oNwdp9pT6kBkG3oqS14y3QcZjG/go-datastore"
+	ds "gx/ipfs/QmPpegoMqhAEqjncrzArm7KVWAkCm78rqL2DPuNjhPrshg/go-datastore"
+	node "gx/ipfs/Qme5bWv7wtjUNGsK2BNGVUFPKiuxWrsqrtvYwCLRw8YFES/go-ipld-format"
 
 	pb "gx/ipfs/QmeWjRodbcZFKe5tMN7poEx3izym6osrLSnTLf9UjJZBbs/pb"
 )
@@ -244,12 +245,13 @@ func clearBar(bar *pb.ProgressBar, mes string) {
 	fmt.Printf("\r%s%s\n", mes, strings.Repeat(" ", bar.GetWidth()-len(mes)))
 }
 func getPackRoot(nd *core.IpfsNode, workdir string) (node.Node, error) {
+	ctx := context.Background()
 	root, err := getManifestRoot(workdir)
 	if err != nil {
 		return nil, err
 	}
 
-	proot, err := nd.DAG.Get(context.Background(), root)
+	proot, err := nd.DAG.Get(ctx, root)
 	if err != nil {
 		return nil, err
 	}
@@ -276,8 +278,7 @@ func getPackRoot(nd *core.IpfsNode, workdir string) (node.Node, error) {
 
 	prootpb := proot.(*dag.ProtoNode)
 	prootpb.AddNodeLinkClean(ManifestFilename, manifnode.(*dag.ProtoNode))
-	_, err = nd.DAG.Add(prootpb)
-	if err != nil {
+	if err := nd.DAG.Add(ctx, prootpb); err != nil {
 		return nil, err
 	}
 	return prootpb, nil
@@ -517,7 +518,7 @@ var verifyPackCommand = cli.Command{
 	},
 }
 
-func verifyPack(ds dag.DAGService, workdir string, manif io.Reader) (bool, error) {
+func verifyPack(ds ipld.DAGService, workdir string, manif io.Reader) (bool, error) {
 	imp := DefaultImporterSettings.String()
 
 	var issue bool
@@ -623,7 +624,7 @@ func addItem(path string, st os.FileInfo, params *h.DagBuilderParams) (node.Node
 	spl := chunk.NewSizeSplitter(rf, chunk.DefaultBlockSize)
 	dbh := params.New(spl)
 
-	nd, err := balanced.BalancedLayout(dbh)
+	nd, err := balanced.Layout(dbh)
 	if err != nil {
 		return nil, err
 	}
